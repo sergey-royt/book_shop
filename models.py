@@ -1,12 +1,17 @@
 from typing import Annotated
-
-from sqlalchemy import Numeric, ForeignKey
-from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 from decimal import Decimal
 from datetime import datetime
 
+from sqlalchemy import Numeric, ForeignKey, String, Text, CheckConstraint
+from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
+
+
 intpk = Annotated[int, mapped_column(primary_key=True)]
+name = Annotated[str, mapped_column(String(length=100))]
 currency = Annotated[Decimal, mapped_column(Numeric(10, 2))]
+amount = Annotated[int, mapped_column(CheckConstraint('amount >= 0'))]
+email = Annotated[str, mapped_column(String(length=254))]
+description = Annotated[str, mapped_column(Text)]
 
 
 class Base(DeclarativeBase):
@@ -19,7 +24,7 @@ class Genre(Base):
 
     genre_id: Mapped[intpk]
 
-    name_genre: Mapped[str]
+    name_genre: Mapped[name]
 
     books: Mapped[list['Book']] = relationship(back_populates='genre')
 
@@ -30,7 +35,7 @@ class Author(Base):
 
     author_id: Mapped[intpk]
 
-    name_author: Mapped[str]
+    name_author: Mapped[name]
 
     books: Mapped[list['Book']] = relationship(back_populates='author')
 
@@ -41,7 +46,7 @@ class Book(Base):
 
     book_id: Mapped[intpk]
 
-    title: Mapped[str]
+    title: Mapped[name]
 
     author_id: Mapped[int] = mapped_column(ForeignKey('author.author_id'))
     author: Mapped[Author] = relationship(back_populates='books')
@@ -51,7 +56,7 @@ class Book(Base):
 
     price: Mapped[currency]
 
-    amount: Mapped[int]
+    amount: Mapped[amount]
 
     buy_books: Mapped[list['BuyBook']] = relationship(back_populates='book')
 
@@ -62,9 +67,9 @@ class City(Base):
 
     city_id: Mapped[intpk]
 
-    name_city: Mapped[str]
+    name_city: Mapped[name]
 
-    days_delivery: Mapped[int]
+    days_delivery: Mapped[int] = mapped_column(CheckConstraint('days_delivery >= 0'))
 
     clients: Mapped[list['Client']] = relationship(back_populates='city')
 
@@ -75,12 +80,12 @@ class Client(Base):
 
     client_id: Mapped[intpk]
 
-    name_client: Mapped[str]
+    name_client: Mapped[name]
 
     city_id: Mapped[int] = mapped_column(ForeignKey('city.city_id'))
     city: Mapped[City] = relationship(back_populates='clients')
 
-    email: Mapped[str]
+    email: Mapped[email]
 
     buys: Mapped[list['Buy']] = relationship(back_populates='client')
 
@@ -91,7 +96,7 @@ class Buy(Base):
 
     buy_id: Mapped[intpk]
 
-    buy_description: Mapped[str]
+    buy_description: Mapped[description]
 
     client_id: Mapped[int] = mapped_column(ForeignKey('client.client_id'))
     client: Mapped[Client] = relationship(back_populates='buys')
@@ -107,7 +112,7 @@ class Step(Base):
 
     step_id: Mapped[intpk]
 
-    name_step: Mapped[str]
+    name_step: Mapped[name]
 
     buy_steps: Mapped[list['BuyStep']] = relationship(back_populates='step')
 
@@ -141,7 +146,7 @@ class BuyBook(Base):
     book_id: Mapped[int] = mapped_column(ForeignKey('book.book_id'))
     book: Mapped[Book] = relationship(back_populates='buy_books')
 
-    amount: Mapped[int]
+    amount: Mapped[amount]
 
 
 
